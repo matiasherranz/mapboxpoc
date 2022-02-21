@@ -10,15 +10,15 @@ mapboxgl.accessToken =
 
 const MapboxPOC = () => {
   const mapContainer = useRef(null)
-  const map = useRef(null)
-  const [lng, setLng] = useState(-70.9)
-  const [lat, setLat] = useState(42.35)
+  const map = useRef<mapboxgl.Map | undefined>(undefined)
+  const [lng, setLng] = useState(-70.9001)
+  const [lat, setLat] = useState(42.3501)
   const [zoom, setZoom] = useState(9)
 
   useEffect(() => {
     if (map.current) return // initialize map only once
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current ?? '',
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [lng, lat],
       zoom: zoom,
@@ -27,10 +27,11 @@ const MapboxPOC = () => {
 
   useEffect(() => {
     if (!map.current) return // wait for map to initialize
-    map.current.on('move', () => {
-      setLng(map.current.getCenter().lng.toFixed(4))
-      setLat(map.current.getCenter().lat.toFixed(4))
-      setZoom(map.current.getZoom().toFixed(2))
+    const current = map.current
+    current.on('move', () => {
+      setLng(Number(current?.getCenter().lng.toFixed(4)))
+      setLat(Number(current.getCenter().lat.toFixed(4)))
+      setZoom(Number(current.getZoom().toFixed(2)))
     })
   })
 
