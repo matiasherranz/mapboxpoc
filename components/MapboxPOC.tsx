@@ -15,24 +15,24 @@ const MapboxPOC = () => {
   const [lat, setLat] = useState(42.3501)
   const [zoom, setZoom] = useState(9)
 
-  // useEffect(() => {
-  //   if (map.current) return // initialize map only once
-  //   map.current = new mapboxgl.Map({
-  //     container: mapContainer.current ?? '',
+  useEffect(() => {
+    if (map.current) return // initialize map only once
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current ?? '',
       // style: 'mapbox://styles/mapbox/streets-v11',
-      // style: 'mapbox://styles/mapbox/dark-v10',
+      style: 'mapbox://styles/mapbox/dark-v10',
       // center: [lng, lat],
-      // center: [-103.5917, 40.6699],
+      center: [-103.5917, 40.6699],
       // zoom: zoom,
-      // zoom: 3,
-    // })
+      zoom: 3,
+    })
     // const map.current = new mapboxgl.Map({
     //   container: 'map',
     //   style: 'mapbox://styles/mapbox/dark-v10',
     //   center: [-103.5917, 40.6699],
     //   zoom: 3
     // });
-  // })
+  })
 
   // useEffect(() => {
     // if (!map.current) return // wait for map to initialize
@@ -148,6 +148,13 @@ const MapboxPOC = () => {
         },
       )
       const data = await response.json();
+
+      // const { latitude, latitude } = data;
+
+      // map?.current?.flyTo({
+      //   center: [longitude, latitude],
+      //   speed: 0.5
+      // });
 
       return {
         'type': 'FeatureCollection',
