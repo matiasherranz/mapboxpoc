@@ -12,7 +12,6 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''
 const BE_TOKEN = process.env.NEXT_PUBLIC_BE_TOKEN
 const BASE_API_URL = process.env.NEXT_PUBLIC_BE_BASE_URL || ''
 
-console.log('BASE_API_URL: ', BASE_API_URL)
 export const initializeMap = (
   map: MutableRefObject<mapboxgl.Map | undefined>,
   mapContainer: RefObject<HTMLDivElement>,
