@@ -1,5 +1,11 @@
 # MapBox Hackaton February, 2022
 
+<img width="1200" alt="image" src="https://user-images.githubusercontent.com/485403/155184019-666ea0f9-493e-4e99-a7fb-5d719ad9427b.png">
+
+<img width="1203" alt="image" src="https://user-images.githubusercontent.com/485403/155184193-50b55814-dd39-4dcf-8fd6-75d83ab63707.png">
+
+<img width="1203" alt="image" src="https://user-images.githubusercontent.com/485403/155184242-91b08772-2818-4b9c-af92-8b9fc3f93c95.png">
+
 ## Intro
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) and heavily based on [this official guide](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/) from MapBox documentation.
