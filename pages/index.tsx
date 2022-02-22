@@ -1,5 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import Script from 'next/script'
 
 import MapboxPOC from '../components/MapboxPOC'
 
