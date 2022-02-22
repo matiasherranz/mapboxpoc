@@ -6,183 +6,314 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import styles from './MapboxPOC.module.scss'
 
 mapboxgl.accessToken =
-  'pk.eyJ1IjoibWF0aWFzaGVycmFueiIsImEiOiJja3drenRhbGoxeDZtMnZuczFyd2lzbDJyIn0.DcL4Jp8fJ1XY2PtKggGxaA'
+    'pk.eyJ1IjoibWF0aWFzaGVycmFueiIsImEiOiJja3drenRhbGoxeDZtMnZuczFyd2lzbDJyIn0.DcL4Jp8fJ1XY2PtKggGxaA'
 
 const MapboxPOC = () => {
-  const mapContainer = useRef(null)
-  const map = useRef<mapboxgl.Map | undefined>(undefined)
-  const [lng, setLng] = useState(-70.9001)
-  const [lat, setLat] = useState(42.3501)
-  const [zoom, setZoom] = useState(9)
+    const mapContainer = useRef(null)
+    const map = useRef<mapboxgl.Map | undefined>(undefined)
+    const [lng, setLng] = useState(-121.6353)
+    const [lat, setLat] = useState(34.3217)
+    const [zoom, setZoom] = useState(5.6)
 
-  useEffect(() => {
-    if (map.current) return // initialize map only once
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current ?? '',
-      // style: 'mapbox://styles/mapbox/streets-v11',
-      style: 'mapbox://styles/mapbox/dark-v10',
-      // center: [lng, lat],
-      center: [-103.5917, 40.6699],
-      // zoom: zoom,
-      zoom: 3,
-    })
-    // const map.current = new mapboxgl.Map({
-    //   container: 'map',
-    //   style: 'mapbox://styles/mapbox/dark-v10',
-    //   center: [-103.5917, 40.6699],
-    //   zoom: 3
-    // });
-  })
-
-  // useEffect(() => {
-    // if (!map.current) return // wait for map to initialize
-    // const current = map.current
-    // current.on('move', () => {
-    //   console.log('getBounds', current?.getBounds())
-    //   setLng(Number(current?.getCenter().lng.toFixed(4)))
-    //   setLat(Number(current.getCenter().lat.toFixed(4)))
-    //   setZoom(Number(current.getZoom().toFixed(2)))
-    // })
-  // })
-
-  useEffect(() => {
-    map?.current?.on('load', async () => {
-      const geojson = await getLocation();
-
-      map?.current?.addSource('earthquakes', {
-        type: 'geojson',
-        // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-        // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-        //         data: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
-        data: geojson,
-        cluster: true,
-        clusterMaxZoom: 14, // Max zoom to cluster points on
-        clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-      });
-
-      map?.current?.addLayer({
-        id: 'clusters',
-        type: 'circle',
-        source: 'earthquakes',
-        filter: ['has', 'point_count'],
-        paint: {
-        // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-        // with three steps to implement three types of circles:
-        //   * Blue, 20px circles when point count is less than 100
-        //   * Yellow, 30px circles when point count is between 100 and 750
-        //   * Pink, 40px circles when point count is greater than or equal to 750
-          'circle-color': [
-            'step',
-            ['get', 'point_count'],
-            '#51bbd6',
-            100,
-            '#f1f075',
-            750,
-            '#f28cb1'
-          ],
-          'circle-radius': [
-            'step',
-            ['get', 'point_count'],
-            20,
-            100,
-            30,
-            750,
-            40
-          ]
-        }
-      });
-
-      map?.current?.addLayer({
-        id: 'cluster-count',
-        type: 'symbol',
-        source: 'earthquakes',
-        filter: ['has', 'point_count'],
-        layout: {
-          'text-field': '{point_count_abbreviated}',
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-          'text-size': 12
-        }
-      });
-
-      map?.current?.addLayer({
-        id: 'unclustered-point',
-        type: 'circle',
-        source: 'earthquakes',
-        filter: ['!', ['has', 'point_count']],
-        paint: {
-          'circle-color': '#11b4da',
-          'circle-radius': 4,
-          'circle-stroke-width': 1,
-          'circle-stroke-color': '#fff'
-        }
-      });
+    useEffect(() => {
+        if (map.current) return // initialize map only once
+        map.current = new mapboxgl.Map({
+            container: mapContainer.current ?? '',
+            // style: 'mapbox://styles/mapbox/streets-v11',
+            style: 'mapbox://styles/mapbox/dark-v10',
+            center: [lng, lat],
+            zoom: zoom,
+        })
     })
 
-    map?.current?.on('zoomstart', () => {
-      console.log('ZOOM START')
-    })
+    useEffect(() => {
+        map?.current?.on('load', async () => {
+            const sum_or_size = ['case', ['has', 'point_count'], ['get', 'sum'], ['get', 'size']];
 
-    map?.current?.on('zoomend', () => {
-      console.log('ZOOM END')
-    })
+            // Fixed Layer
+            map?.current?.addSource('lev-clusters-fixed', {
+                type: 'geojson',
+                // @ts-ignore: loading format
+                data: await fetchData(map?.current), 
+                cluster: true,
+                clusterMaxZoom: 14,
+                clusterRadius: 50,
+                clusterProperties: {
+                    "sum": ["+", ["get", "size"]]
+                }
+            });
 
-    map?.current?.on('dragstart', () => {
-      console.log('DRAG START')
-    })
+            map?.current?.addLayer({
+                id: 'clusters-circles',
+                type: 'circle',
+                source: 'lev-clusters-fixed',
+                paint: {
+                    'circle-color': [
+                        'step',
+                        sum_or_size,
+                        '#51bbd6', 100,
+                        '#f1f075', 750,
+                        '#f28cb1'
+                    ],
+                    'circle-radius': [
+                        'step',
+                        sum_or_size,
+                        20, 5_000,
+                        30, 10_000,
+                        40
+                    ]
+                },
+                maxzoom: 13,
+            });
 
-    map?.current?.on('dragend', () => {
-      console.log('DRAG END')
-    })
-  }, [])
+            map?.current?.addLayer({
+                id: 'cluster-count',
+                type: 'symbol',
+                source: 'lev-clusters-fixed',
+                layout: {
+                    'text-field': ['case', ['has', 'point_count'], ['get', 'sum'], ['get', 'size']],
+                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                },
+                maxzoom: 13,
+            });
 
-  async function getLocation() {
-    try {
-      const response = await fetch(
-        'http://0.0.0.0:7680/api/v1/lender_search/map?bottom_right_lon=-73.79486283748136&bottom_right_lat=40.659420729455675&top_left_lat=40.8357674763742&top_left_lon=-74.12067610742683&precision=5',
-        {
-          // headers: new Headers({
-          //   'Authorization': 'Bearer e427d7d9-c18b-4e57-a7ed-d35960c00d07',
-          //   'X-Origin-App': 'test',
-          // }),
-          method: 'GET'
-        },
-      )
-      const data = await response.json();
+            // Hot Layer
+            map?.current?.addSource('lev-clusters-variable', {
+                type: 'geojson',
+                // @ts-ignore: loading format
+                data: {
+                    'type': 'FeatureCollection',
+                    'features': []
+                }, 
+                cluster: true,
+                clusterMaxZoom: 14,
+                clusterRadius: 50,
+                clusterProperties: {
+                    "sum": ["+", ["get", "size"]]
+                }
+            });
 
-      // const { latitude, latitude } = data;
+            map?.current?.addLayer({
+                id: 'clusters-circles-variable',
+                type: 'circle',
+                source: 'lev-clusters-variable',
+                paint: {
+                    'circle-color': [
+                        'step',
+                        sum_or_size,
+                        '#51bbd6', 100,
+                        '#f1f075', 750,
+                        '#f28cb1'
+                    ],
+                    'circle-radius': [
+                        'step',
+                        sum_or_size,
+                        20, 5_000,
+                        30, 10_000,
+                        40
+                    ]
+                },
+                minzoom: 13,
+                maxzoom: 15
+            });
 
-      // map?.current?.flyTo({
-      //   center: [longitude, latitude],
-      //   speed: 0.5
-      // });
+            map?.current?.addLayer({
+                id: 'cluster-count-variable',
+                type: 'symbol',
+                source: 'lev-clusters-variable',
+                layout: {
+                    'text-field': ['case', ['has', 'point_count'], ['get', 'sum'], ['get', 'size']],
+                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                },
+                minzoom: 13,
+                maxzoom: 15
+            });
 
-      return {
-        'type': 'FeatureCollection',
-        'features': data.map(({ coordinates }) => ({
-          'type': 'Feature',
-          'geometry': {
-            'type': 'Point',
-            'coordinates': [coordinates.lon, coordinates.lat]
-          }
-        }))
-      };
-    } catch (err) {
+            // Point Layer
+            map?.current?.addSource('lev-points', {
+                type: 'geojson',
+                // @ts-ignore: loading format
+                data: {
+                    'type': 'FeatureCollection',
+                    'features': []
+                }, 
+                cluster: true,
+                clusterMaxZoom: 16,
+                clusterRadius: 50,
+            });
 
-      console.log('ERROR', err)
+            map?.current?.addLayer({
+                id: 'property_cluster',
+                type: 'circle',
+                source: 'lev-points',
+                filter: ['has', 'point_count'],
+                paint: {
+                    'circle-color': '#51bbd6',
+                    'circle-radius': 10
+                },
+                minzoom: 15,
+            });
 
-      // if (updateSource) clearInterval(updateSource);
-      throw new Error(err);
+            map?.current?.addLayer({
+                id: 'property_cluster_label',
+                type: 'symbol',
+                source: 'lev-points',
+                filter: ['has', 'point_count'],
+                layout: {
+                    'text-field': ['get', 'point_count'],
+                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                },
+                minzoom: 15,
+            });
+
+            map?.current?.addLayer({
+                id: 'property_point',
+                type: 'circle',
+                source: 'lev-points',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': '#FFFFFF',
+                    'circle-radius': 5
+                },
+                minzoom: 15,
+            });
+        })
+
+
+        // Querying Logic        
+        map?.current?.on('zoomend', async () => {
+            if (!map?.current) return;
+            console.log("ZOOMEND START");
+            const newZoomLevel = Number(map?.current?.getZoom().toFixed(2));
+            if (newZoomLevel >= 12 && zoom < 12) {
+                console.log("RERENDER x---");
+                fetchAndRender(map?.current);
+            }
+            if (newZoomLevel >= 14 && zoom < 14) {
+                console.log("POINTS xx---");
+                fetchAndRenderPoints(map?.current);
+            }
+            setZoom(newZoomLevel);
+            zoom = newZoomLevel;
+            console.log("ZOOMEND DONE");
+        })
+
+        map?.current?.on('dragend', async () => {
+            if (!map?.current) return;
+            console.log("DRAGEND START");
+            if (zoom >= 12 && zoom < 14) {
+                console.log("RERENDER <---");
+                fetchAndRender(map?.current);
+            };
+            if (zoom >= 14) {
+                console.log("POINTS <<---");
+                fetchAndRenderPoints(map?.current);
+            };
+            setLng(Number(map?.current?.getCenter().lng.toFixed(4)));
+            setLat(Number(map?.current?.getCenter().lat.toFixed(4)));
+            console.log("DRAGEND DONE");
+        })
+
+    }, [])
+
+    async function fetchAndRender(current_map: mapboxgl.Map) {
+        current_map?.getSource('lev-clusters-variable').setData(
+            await fetchData(current_map)
+        );
     }
-  }
 
-  return (
-    <div className={styles.mapWrapper}>
-      <div className={styles.sidebar}>
-        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
-      </div>
-      <div ref={mapContainer} className={styles.mapContainer} />
-    </div>
-  )
+    async function fetchAndRenderPoints(current_map: mapboxgl.Map) {
+        current_map?.getSource('lev-points').setData(
+            await fetchDataPoints(current_map)
+        );
+    }
+
+    async function fetchData(current_map: mapboxgl.Map) {
+        try {
+            const zoom = Math.min(Number(current_map?.getZoom().toFixed(0)), 12);
+            const topLeft = current_map?.getBounds().getNorthWest();
+            const bottomRight = current_map?.getBounds().getSouthEast();
+            const response = await fetch(
+                'http://0.0.0.0:7680/api/v1/lender_search/map'
+                + `?bottom_right_lon=${bottomRight.lng.toFixed(4)}`
+                + `&bottom_right_lat=${bottomRight.lat.toFixed(4)}`
+                + `&top_left_lon=${topLeft.lng.toFixed(4)}`
+                + `&top_left_lat=${topLeft.lat.toFixed(4)}`
+                + `&precision=${zoom}`,
+                {
+                    headers: new Headers({
+                        'Authorization': 'Bearer d0de72bd-933a-4156-bc6a-028c54ebaae7',
+                        'X-Origin-App': 'test',
+                    }),
+                    method: 'GET'
+                },
+            )
+            const data = await response.json();
+
+            return {
+                'type': 'FeatureCollection',
+                'features': data.map(({ properties, coordinates }) => ({
+                    'type': 'Feature',
+                    'properties': {
+                        'size': properties.count
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [coordinates.lon, coordinates.lat]
+                    }
+                }))
+            };
+        } catch (err) {
+
+            console.log('ERROR', err)
+
+            throw new Error(err);
+        }
+    }
+
+    async function fetchDataPoints(current_map: mapboxgl.Map) {
+        try {
+            const topLeft = current_map?.getBounds().getNorthWest();
+            const bottomRight = current_map?.getBounds().getSouthEast();
+            const response = await fetch(
+                'http://0.0.0.0:7680/api/v1/lender_search/map/properties'
+                + `?bottom_right_lon=${bottomRight.lng.toFixed(4)}`
+                + `&bottom_right_lat=${bottomRight.lat.toFixed(4)}`
+                + `&top_left_lon=${topLeft.lng.toFixed(4)}`
+                + `&top_left_lat=${topLeft.lat.toFixed(4)}`,
+                {
+                    headers: new Headers({
+                        'Authorization': 'Bearer d0de72bd-933a-4156-bc6a-028c54ebaae7',
+                        'X-Origin-App': 'test',
+                    }),
+                    method: 'GET'
+                },
+            )
+            const data = await response.json();
+
+            return {
+                'type': 'FeatureCollection',
+                'features': data
+            };
+        } catch (err) {
+
+            console.log('ERROR', err)
+
+            throw new Error(err);
+        }
+    }
+
+    return (
+        <div className={styles.mapWrapper}>
+            <div className={styles.sidebar}>
+                Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+            </div>
+            <div ref={mapContainer} className={styles.mapContainer} />
+        </div>
+    )
 }
 
 export default MapboxPOC
