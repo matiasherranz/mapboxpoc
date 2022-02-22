@@ -16,3 +16,14 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.mapboxgl-popup-content {
+  background: #211E3C !important;
+  padding: 10px !important;
+  color: #FFFFFF;
+}
+
+.mapboxgl-popup-close-button {
+  padding: 10px;
+  color: #FFFFFF;
+}
