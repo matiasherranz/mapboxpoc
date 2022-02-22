@@ -6,16 +6,16 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import styles from './MapboxPOC.module.scss'
 
 mapboxgl.accessToken =
-  'pk.eyJ1IjoibWF0aWFzaGVycmFueiIsImEiOiJja3drenRhbGoxeDZtMnZuczFyd2lzbDJyIn0.DcL4Jp8fJ1XY2PtKggGxaA'
+  'pk.eyJ1Ijoid2lzdGFuLWxldiIsImEiOiJja3RrajFkMHUxbW00MnVuNGJjZXI3dWtqIn0.paako3AHTV0MY1mBGYYgSQ'
 
 const API = 'http://0.0.0.0:7680/api/v1/lender_search/map'
 
 const MapboxPOC = () => {
   const mapContainer = useRef(null)
   const map = useRef<mapboxgl.Map | undefined>(undefined)
-  const [lng, setLng] = useState(-121.6353)
-  const [lat, setLat] = useState(34.3217)
-  const [zoom, setZoom] = useState(9)
+  const [lng, setLng] = useState(-119.2712)
+  const [lat, setLat] = useState(36.3957)
+  const [zoom, setZoom] = useState(5.49)
 
   useEffect(() => {
     if (map.current) return // initialize map only once
@@ -262,16 +262,7 @@ const MapboxPOC = () => {
 
       return {
         type: 'FeatureCollection',
-        features: data.map(({ properties, coordinates }) => ({
-          type: 'Feature',
-          properties: {
-            size: properties.count,
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [coordinates.lon, coordinates.lat],
-          },
-        })),
+        features: data,
       }
     } catch (err) {
       console.log('ERROR', err)
