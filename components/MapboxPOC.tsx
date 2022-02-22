@@ -3,6 +3,8 @@ import React, { useRef, useEffect, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
+import useDebounce from './useDebounce'
+
 import styles from './MapboxPOC.module.scss'
 
 mapboxgl.accessToken =
@@ -13,9 +15,10 @@ const API = 'http://0.0.0.0:7680/api/v1/lender_search/map'
 const MapboxPOC = () => {
   const mapContainer = useRef(null)
   const map = useRef<mapboxgl.Map | undefined>(undefined)
-  const [lng, setLng] = useState(-119.2712)
-  const [lat, setLat] = useState(36.3957)
-  const [zoom, setZoom] = useState(5.49)
+  const [dLng, lng, setLng] = useDebounce(-121.6353, 500)
+  const [dLat, lat, setLat] = useDebounce(34.3217, 500)
+  const [dZoom, zoom, setZoom] = useDebounce(5.6, 500)
+
 
   useEffect(() => {
     if (map.current) return // initialize map only once
@@ -23,8 +26,8 @@ const MapboxPOC = () => {
       container: mapContainer.current ?? '',
       // style: 'mapbox://styles/mapbox/streets-v11',
       style: 'mapbox://styles/mapbox/dark-v10',
-      center: [lng, lat],
-      zoom: zoom,
+      center: [dLng, dLat],
+      zoom: dZoom,
     })
   })
 
@@ -196,11 +199,11 @@ const MapboxPOC = () => {
       if (!map?.current) return
       console.log('ZOOMEND START')
       const newZoomLevel = Number(map?.current?.getZoom().toFixed(2))
-      if (newZoomLevel >= 12 && zoom < 12) {
+      if (newZoomLevel >= 12 && dZoom < 12) {
         console.log('RERENDER x---')
         fetchAndRender(map?.current)
       }
-      if (newZoomLevel >= 14 && zoom < 14) {
+      if (newZoomLevel >= 14 && dZoom < 14) {
         console.log('POINTS xx---')
         fetchAndRenderPoints(map?.current)
       }
@@ -212,11 +215,11 @@ const MapboxPOC = () => {
     map?.current?.on('dragend', async () => {
       if (!map?.current) return
       console.log('DRAGEND START')
-      if (zoom >= 12 && zoom < 14) {
+      if (dZoom >= 12 && dZoom < 14) {
         console.log('RERENDER <---')
         fetchAndRender(map?.current)
       }
-      if (zoom >= 14) {
+      if (dZoom >= 14) {
         console.log('POINTS <<---')
         fetchAndRenderPoints(map?.current)
       }
@@ -305,7 +308,7 @@ const MapboxPOC = () => {
   return (
     <div className={styles.mapWrapper}>
       <div className={styles.sidebar}>
-        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+        Longitude: {dLng} | Latitude: {dLat} | Zoom: {dZoom}
       </div>
       <div ref={mapContainer} className={styles.mapContainer} />
     </div>
