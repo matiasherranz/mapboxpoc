@@ -16,27 +16,16 @@ import styles from './MapboxPOC.module.scss'
 
 // Alex
 mapboxgl.accessToken =
-  'pk.eyJ1IjoiYWxla3NleXRpbW9zY2hlbmtvIiwiYSI6ImNrendzejJxOTAwcGwyeHBkZTYwdXFmdjAifQ.ihjiHkVK_ukVDTtFQ5mjhg'
+  'pk.eyJ1Ijoid2lzdGFuLWxldiIsImEiOiJja3RrajFkMHUxbW00MnVuNGJjZXI3dWtqIn0.paako3AHTV0MY1mBGYYgSQ'
 
 const API = 'http://0.0.0.0:7680/api/v1/lender_search/map'
 
 const MapboxPOC = () => {
   const mapContainer = useRef(null)
   const map = useRef<mapboxgl.Map | undefined>(undefined)
-
-  // const [lng, setLng] = useState(-121.6353)
   const [dLng, lng, setLng] = useDebounce(-121.6353, 500)
-
-  // const [lat, setLat] = useState(34.3217)
   const [dLat, lat, setLat] = useDebounce(34.3217, 500)
-
-  // const [zoom, setZoom] = useState(5.6)
   const [dZoom, zoom, setZoom] = useDebounce(5.6, 500)
-
-  // const [dBounds, bounds, setBounds] = useDebounce(
-  //   { tl: { lat, lng }, br: { lat, lng } },
-  //   500
-  // )
 
   useEffect(() => {
     if (map.current) return // initialize map only once
@@ -283,16 +272,7 @@ const MapboxPOC = () => {
 
       return {
         type: 'FeatureCollection',
-        features: data.map(({ properties, coordinates }) => ({
-          type: 'Feature',
-          properties: {
-            size: properties.count,
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [coordinates?.lon, coordinates?.lat],
-          },
-        })),
+        features: data,
       }
     } catch (err) {
       console.log('ERROR', err)
