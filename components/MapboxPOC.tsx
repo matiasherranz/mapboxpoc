@@ -16,9 +16,9 @@ import {
 const MapboxPOC = () => {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | undefined>(undefined)
-  const [dLng, lng, setLng] = useDebounce(-121.6353, 500)
-  const [dLat, lat, setLat] = useDebounce(34.3217, 500)
-  const [dZoom, zoom, setZoom] = useDebounce(5.6, 500)
+  const [dLng, lng, setLng] = useDebounce(-121.6353, 1000)
+  const [dLat, lat, setLat] = useDebounce(34.3217, 1000)
+  const [dZoom, zoom, setZoom] = useDebounce(5.6, 1000)
 
   // Init Mapbox's `map`
   useEffect(() => {
