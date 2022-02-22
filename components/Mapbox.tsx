@@ -1,11 +1,11 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, FC } from 'react'
 
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 import useDebounce from './useDebounce'
 
-import styles from './MapboxPOC.module.scss'
+import styles from './Mapbox.module.scss'
 import {
   initializeMap,
   setupDragEnd,
@@ -13,12 +13,18 @@ import {
   setupZoomEnd,
 } from './mapboxHelpers'
 
-const MapboxPOC = () => {
+type MapboxProps = {
+  initialLng: number
+  initialLat: number
+  initialZoom: number
+}
+
+const Mapbox: FC<MapboxProps> = ({ initialLng, initialLat, initialZoom }) => {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | undefined>(undefined)
-  const [dLng, lng, setLng] = useDebounce(-121.6353, 1000)
-  const [dLat, lat, setLat] = useDebounce(34.3217, 1000)
-  const [dZoom, zoom, setZoom] = useDebounce(5.6, 1000)
+  const [dLng, lng, setLng] = useDebounce(initialLng, 1000)
+  const [dLat, lat, setLat] = useDebounce(initialLat, 1000)
+  const [dZoom, zoom, setZoom] = useDebounce(initialZoom, 1000)
 
   // Init Mapbox's `map`
   useEffect(() => {
@@ -50,4 +56,4 @@ const MapboxPOC = () => {
   )
 }
 
-export default MapboxPOC
+export default Mapbox

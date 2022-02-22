@@ -1,8 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Script from 'next/script'
 
-import MapboxPOC from '../components/MapboxPOC'
+import Mapbox from '../components/Mapbox'
 
 import styles from '../styles/Home.module.css'
 
@@ -15,7 +14,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <MapboxPOC />
+      <Mapbox initialLat={34.3217} initialLng={-121.6353} initialZoom={5.6} />
     </div>
   )
 }
