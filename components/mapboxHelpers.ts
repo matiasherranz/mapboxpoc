@@ -1,9 +1,34 @@
-import { MutableRefObject } from 'react'
+import { MutableRefObject, RefObject } from 'react'
 
-import mapboxgl from 'mapbox-gl'
+import mapboxgl, { GeoJSONSource } from 'mapbox-gl'
+import {
+  Feature,
+  FeatureCollection,
+  GeoJsonProperties,
+  Geometry,
+} from 'geojson'
 
-const BE_TOKEN = '1ba71d9d-96f7-4fe4-a5fa-c978cdae4711'
-const API = 'http://0.0.0.0:7680/api/v1/lender_search/map'
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''
+const BE_TOKEN = process.env.NEXT_PUBLIC_BE_TOKEN
+const BASE_API_URL = process.env.NEXT_PUBLIC_BE_BASE_URL || ''
+
+console.log('BASE_API_URL: ', BASE_API_URL)
+export const initializeMap = (
+  map: MutableRefObject<mapboxgl.Map | undefined>,
+  mapContainer: RefObject<HTMLDivElement>,
+  lat: number,
+  lng: number,
+  zoom: number
+) => {
+  if (map.current) return // initialize map only once
+  map.current = new mapboxgl.Map({
+    container: mapContainer.current ?? '',
+    // style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/mapbox/dark-v10',
+    center: [lng, lat],
+    zoom: zoom,
+  })
+}
 
 export const setupOnLoad = (
   map: MutableRefObject<mapboxgl.Map | undefined>
@@ -171,25 +196,27 @@ export const setupOnLoad = (
   })
 }
 
-async function fetchAndRender(current_map: mapboxgl.Map) {
-  current_map
-    ?.getSource('lev-clusters-variable')
-    .setData(await fetchData(current_map))
-}
+// TODO: We can add this optimization at some point:
+// https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
+// export const setupOnRender = (map) => {
+//   map.on('render', () => {
+//     if (!map.isSourceLoaded('earthquakes')) return
+//     updateMarkers()
+//   })
+// }
 
-async function fetchAndRenderPoints(current_map: mapboxgl.Map) {
-  current_map
-    ?.getSource('lev-points')
-    .setData(await fetchDataPoints(current_map))
-}
+type GeoData =
+  | String
+  | Feature<Geometry, GeoJsonProperties>
+  | FeatureCollection<Geometry, GeoJsonProperties>
 
-async function fetchData(current_map: mapboxgl.Map) {
+const fetchData = async (current_map: mapboxgl.Map): Promise<GeoData> => {
   try {
     const zoom = Math.min(Number(current_map?.getZoom().toFixed(0)), 12)
     const topLeft = current_map?.getBounds().getNorthWest()
     const bottomRight = current_map?.getBounds().getSouthEast()
     const response = await fetch(
-      'http://0.0.0.0:7680/api/v1/lender_search/map' +
+      `${BASE_API_URL}/lender_search/map` +
         `?bottom_right_lon=${bottomRight.lng.toFixed(4)}` +
         `&bottom_right_lat=${bottomRight.lat.toFixed(4)}` +
         `&top_left_lon=${topLeft.lng.toFixed(4)}` +
@@ -215,19 +242,33 @@ async function fetchData(current_map: mapboxgl.Map) {
   }
 }
 
-async function fetchDataPoints(current_map: mapboxgl.Map) {
+const fetchAndRender = async (currentMap: mapboxgl.Map) => {
+  const currentMapSource = currentMap?.getSource(
+    'lev-clusters-variable'
+  ) as GeoJSONSource
+
+  return currentMapSource?.setData(await fetchData(currentMap))
+}
+
+const fetchAndRenderPoints = async (currentMap: mapboxgl.Map) => {
+  const currentMapSource = currentMap?.getSource('lev-points') as GeoJSONSource
+  const data = await fetchDataPoints(currentMap)
+  return currentMapSource?.setData(data as GeoData)
+}
+
+const fetchDataPoints = async (current_map: mapboxgl.Map) => {
   try {
     const topLeft = current_map?.getBounds().getNorthWest()
     const bottomRight = current_map?.getBounds().getSouthEast()
     const response = await fetch(
-      'http://0.0.0.0:7680/api/v1/lender_search/map/properties' +
+      `${BASE_API_URL}/lender_search/map/properties` +
         `?bottom_right_lon=${bottomRight.lng.toFixed(4)}` +
         `&bottom_right_lat=${bottomRight.lat.toFixed(4)}` +
         `&top_left_lon=${topLeft.lng.toFixed(4)}` +
         `&top_left_lat=${topLeft.lat.toFixed(4)}`,
       {
         headers: new Headers({
-          Authorization: 'Bearer d0de72bd-933a-4156-bc6a-028c54ebaae7',
+          Authorization: `Bearer ${BE_TOKEN}`,
           'X-Origin-App': 'test',
         }),
         method: 'GET',
