@@ -225,6 +225,7 @@ const fetchData = async (current_map: mapboxgl.Map): Promise<GeoData> => {
         headers: new Headers({
           Authorization: `Bearer ${BE_TOKEN}`,
           'X-Origin-App': 'test',
+          cors: 'no-cors',
         }),
         method: 'GET',
       }
