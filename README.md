@@ -1,5 +1,8 @@
 # MapBox Hackaton February, 2022
 
+This POC was build in 2 mornings by @wistan-lev, @Aleksey-Timoschenko, @marcosjuncos11 and @matiasherranz.
+For context, the chart looks simple, but it is a massive visualization ontop of 500k+ data points at the same time whilst being performant and snappy. It lets you zoom in to the exact property and see the details about it in a tooltip.
+
 <img width="1200" alt="image" src="https://user-images.githubusercontent.com/485403/155184019-666ea0f9-493e-4e99-a7fb-5d719ad9427b.png">
 
 <img width="1203" alt="image" src="https://user-images.githubusercontent.com/485403/155184193-50b55814-dd39-4dcf-8fd6-75d83ab63707.png">
