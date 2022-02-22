@@ -8,6 +8,8 @@ import {
   Geometry,
 } from 'geojson'
 
+import styles from './Mapbox.module.scss'
+
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''
 const BE_TOKEN = process.env.NEXT_PUBLIC_BE_TOKEN
 const BASE_API_URL = process.env.NEXT_PUBLIC_BE_BASE_URL || ''
@@ -191,6 +193,40 @@ export const setupOnLoad = (
         'circle-radius': 5,
       },
       minzoom: 15,
+    })
+
+    //Adding popup for points
+    // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+    map?.current?.on('click', 'property_point', (target) => {
+      const allPoints = target?.features ?? null
+      const firstPoint = allPoints ? allPoints[0] : null
+
+      if (!firstPoint) return
+
+      // @ts-ignore
+      const coordinates = firstPoint?.geometry.coordinates
+      const lenderName = firstPoint.properties ? firstPoint.properties['lender_name'] : null
+      const assetCategory = firstPoint.properties ? firstPoint.properties['asset_category'] : null
+      const recordingDate = firstPoint.properties ? firstPoint.properties['recording_date'] : '2010-08-13'
+      const mortgageAmount = firstPoint.properties ? firstPoint.properties['mortgage_amount'] : '499000.0'
+      const address = firstPoint.properties ? firstPoint.properties['address'] : '34 E 4TH ST, NEW YORK, NY 10003'
+
+      const description = `<article class=${styles.popupWrapper}>
+        <header>
+          ${ address ? `<strong>${address}</strong>` : '' }
+        </header>
+        <div class=${styles.popupContent}>
+          <div>${ lenderName ? `<span class=${styles.popupContentTitle}>Lender Name</span>: ${lenderName}` : '' }</div>
+          <div>${ assetCategory ? `<span class=${styles.popupContentTitle}>Asset Category</span>: ${assetCategory}` : '' }</div>
+          <div>${ mortgageAmount ? `<span class=${styles.popupContentTitle}>Mortgage Amount</span>: ${mortgageAmount}` : '' }</div>
+          <div>${ recordingDate ? `<span class=${styles.popupContentTitle}>Recording Date</span>: ${recordingDate}` : '' }</div>
+        </div>
+      </article>`
+
+      new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(description)
+        .addTo(map?.current as mapboxgl.Map)
     })
   })
 }
