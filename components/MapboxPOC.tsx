@@ -7,6 +7,14 @@ import useDebounce from './useDebounce'
 
 import styles from './MapboxPOC.module.scss'
 
+//mapboxgl.accessToken =
+//  'pk.eyJ1IjoibWF0aWFzaGVycmFueiIsImEiOiJja3drenRhbGoxeDZtMnZuczFyd2lzbDJyIn0.DcL4Jp8fJ1XY2PtKggGxaA'
+
+// Wistan
+//mapboxgl.accessToken =
+//  'pk.eyJ1Ijoid2lzdGFuLWxldiIsImEiOiJja3RrajFkMHUxbW00MnVuNGJjZXI3dWtqIn0.paako3AHTV0MY1mBGYYgSQ'
+
+// Alex
 mapboxgl.accessToken =
   'pk.eyJ1IjoiYWxla3NleXRpbW9zY2hlbmtvIiwiYSI6ImNrendzejJxOTAwcGwyeHBkZTYwdXFmdjAifQ.ihjiHkVK_ukVDTtFQ5mjhg'
 
@@ -15,7 +23,6 @@ const API = 'http://0.0.0.0:7680/api/v1/lender_search/map'
 const MapboxPOC = () => {
   const mapContainer = useRef(null)
   const map = useRef<mapboxgl.Map | undefined>(undefined)
-
 
   // const [lng, setLng] = useState(-121.6353)
   const [dLng, lng, setLng] = useDebounce(-121.6353, 500)
@@ -283,7 +290,7 @@ const MapboxPOC = () => {
           },
           geometry: {
             type: 'Point',
-            coordinates: [coordinates.lon, coordinates.lat],
+            coordinates: [coordinates?.lon, coordinates?.lat],
           },
         })),
       }
