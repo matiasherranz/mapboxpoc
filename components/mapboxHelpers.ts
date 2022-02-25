@@ -207,9 +207,9 @@ export const setupOnLoad = (
       const coordinates = firstPoint?.geometry.coordinates
       const lenderName = firstPoint.properties ? firstPoint.properties['lender_name'] : null
       const assetCategory = firstPoint.properties ? firstPoint.properties['asset_category'] : null
-      const recordingDate = firstPoint.properties ? firstPoint.properties['recording_date'] : '2010-08-13'
-      const mortgageAmount = firstPoint.properties ? firstPoint.properties['mortgage_amount'] : '499000.0'
-      const address = firstPoint.properties ? firstPoint.properties['address'] : '34 E 4TH ST, NEW YORK, NY 10003'
+      const recordingDate = firstPoint.properties ? firstPoint.properties['recording_date'] : null
+      const mortgageAmount = firstPoint.properties ? firstPoint.properties['mortgage_amount'] : null
+      const address = firstPoint.properties ? firstPoint.properties['address'] : null
 
       const description = `<article class=${styles.popupWrapper}>
         <header>
